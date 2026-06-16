@@ -1,22 +1,36 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom'
+import MainLayout from '@/components/layout/MainLayout'
 import ProtectedRoute from './ProtectedRoute'
 import LoginPage from '@/pages/LoginPage'
 import ProductsPage from '@/pages/ProductsPage'
 import ProductDetailPage from '@/pages/ProductDetailPage'
 import DashboardPage from '@/pages/DashboardPage'
 
-export const router = createBrowserRouter([
-    // Public — accessible without login
-    { path: '/', element: <ProductsPage /> },
-    { path: '/product/:id', element: <ProductDetailPage /> },
-    { path: '/login', element: <LoginPage /> },
+function Layout() {
+    return (
+        <MainLayout>
+            <Outlet />
+        </MainLayout>
+    )
+}
 
-    // Protected — require login
+export const router = createBrowserRouter([
     {
-        element: <ProtectedRoute />,
+        element: <Layout />,
         children: [
-            { path: '/favorites', element: <DashboardPage /> }, // placeholder
-            { path: '/profile', element: <DashboardPage /> },   // placeholder
+            // Public — accessible without login
+            { path: '/', element: <ProductsPage /> },
+            { path: '/product/:id', element: <ProductDetailPage /> },
+            { path: '/login', element: <LoginPage /> },
+
+            // Protected — require login
+            {
+                element: <ProtectedRoute />,
+                children: [
+                    { path: '/favorites', element: <DashboardPage /> }, // placeholder
+                    { path: '/profile', element: <DashboardPage /> },   // placeholder
+                ],
+            },
         ],
     },
 ])

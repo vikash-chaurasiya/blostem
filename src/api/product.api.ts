@@ -1,5 +1,6 @@
 import apiClient from "./client";
-import type { Product, ProductsResponse, Category } from "@/types/product";
+import type { Product, ProductsResponse } from "@/types/product";
+import type { Category } from "@/types/category";
 
 export const getProducts = async (limit: number, skip: number): Promise<ProductsResponse> => {
     const { data } = await apiClient.get<ProductsResponse>("/products", {
@@ -38,5 +39,10 @@ export const getProduct = async (id: number): Promise<Product> => {
 
 export const getCategories = async (): Promise<Category[]> => {
     const { data } = await apiClient.get<Category[]>("/products/categories");
+    return data;
+};
+
+export const getCategoryList = async (): Promise<string[]> => {
+    const { data } = await apiClient.get<string[]>("/products/category-list");
     return data;
 };
