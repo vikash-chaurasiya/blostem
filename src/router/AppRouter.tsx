@@ -1,20 +1,22 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import GuestRoute from './GuestRoute'
 import ProtectedRoute from './ProtectedRoute'
 import LoginPage from '@/pages/LoginPage'
+import ProductsPage from '@/pages/ProductsPage'
+import ProductDetailPage from '@/pages/ProductDetailPage'
 import DashboardPage from '@/pages/DashboardPage'
 
 export const router = createBrowserRouter([
+    // Public — accessible without login
+    { path: '/', element: <ProductsPage /> },
+    { path: '/product/:id', element: <ProductDetailPage /> },
+    { path: '/login', element: <LoginPage /> },
+
+    // Protected — require login
     {
-        path: '/login',
-        element: <GuestRoute />,
-        children: [{ index: true, element: <LoginPage /> }],
-    },
-    {
-        path: '/',
         element: <ProtectedRoute />,
         children: [
-            { index: true, element: <DashboardPage /> },
+            { path: '/favorites', element: <DashboardPage /> }, // placeholder
+            { path: '/profile', element: <DashboardPage /> },   // placeholder
         ],
     },
 ])
