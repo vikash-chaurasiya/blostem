@@ -23,11 +23,6 @@ export default function Navbar() {
 
     const { data: categories = [] } = useCategories();
 
-    // Close mobile menu on route change
-    useEffect(() => {
-        setMenuOpen(false);
-    }, [location.pathname, location.search]);
-
     useEffect(() => {
         if (debouncedSearch.trim()) {
             navigate(`/?search=${encodeURIComponent(debouncedSearch.trim())}`);
@@ -204,6 +199,7 @@ export default function Navbar() {
                 >
                     <NavLink
                         to="/favorites"
+                        onClick={() => setMenuOpen(false)}
                         style={({ isActive }) => ({
                             ...navLinkStyle(isActive),
                             display: "block",
@@ -215,6 +211,7 @@ export default function Navbar() {
                     </NavLink>
                     <NavLink
                         to="/profile"
+                        onClick={() => setMenuOpen(false)}
                         style={({ isActive }) => ({
                             ...navLinkStyle(isActive),
                             display: "block",

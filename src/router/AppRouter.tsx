@@ -18,6 +18,9 @@ function Layout() {
     )
 }
 
+// Exported so the Axios 401 interceptor can navigate without a hook (router
+// singleton pattern). This deliberately mixes a non-component export here.
+// eslint-disable-next-line react-refresh/only-export-components
 export const router = createBrowserRouter([
     {
         element: <Layout />,
