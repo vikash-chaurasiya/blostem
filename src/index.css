@@ -228,6 +228,19 @@ body {
     gap: 1rem 1.5rem;
 }
 
+/* Profile detail sections — single column on mobile, two on larger screens */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .profile-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 /* Reviews grid */
 .reviews-grid {
     display: grid;

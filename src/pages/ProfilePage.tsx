@@ -90,7 +90,7 @@ export default function ProfilePage() {
                 </header>
 
                 {/* ── Detail sections ── */}
-                <div className="product-meta-grid" style={{ gap: "1.5rem" }}>
+                <div className="profile-grid">
                     <Section title="Personal">
                         <Field label="Full name" value={`${profile.firstName} ${profile.maidenName ? profile.maidenName + " " : ""}${profile.lastName}`} />
                         <Field label="Gender" value={capitalize(profile.gender)} />
