@@ -10,7 +10,7 @@ function formatCategory(slug: string) {
 }
 
 export default function Navbar() {
-    const { isAuthenticated, user, logout } = useAuthStore();
+    const { isAuthenticated, isInitialized, user, logout } = useAuthStore();
     const navigate = useNavigate();
     const location = useLocation();
     const params = new URLSearchParams(location.search);
@@ -108,7 +108,11 @@ export default function Navbar() {
 
                     <ThemeToggle />
 
-                    {isAuthenticated ? (
+                    {!isInitialized ? (
+                        // Session not yet restored — render a placeholder to avoid
+                        // flashing "Sign in" before /auth/me resolves.
+                        <span aria-hidden style={{ width: "2rem", height: "2rem", flexShrink: 0 }} />
+                    ) : isAuthenticated ? (
                         <>
                             {/* Desktop: nav links + avatar + logout button */}
                             <div className="desktop-auth" style={{ display: "flex", alignItems: "center", gap: "1.25rem" }}>

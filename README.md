@@ -2,6 +2,10 @@
 
 A single-page product store where users browse products, search and filter, log in, and manage a personal, per-user favorites list. Built as a frontend take-home — the focus is production-quality structure, type safety, and state separation rather than feature count.
 
+## Live Demo
+
+[https://vikash-blostem.vercel.app/](https://vikash-blostem.vercel.app/)
+
 ## Running locally
 
 ```bash
@@ -19,19 +23,34 @@ npm test
 
 Test credentials — `username: emilys` / `password: emilyspass`
 
-## Stack
+## Tech Stack
 
-React 18 + Vite, TypeScript (strict), Tailwind CSS, React Router v6, Axios, TanStack Query, Zustand, React Hook Form + Zod, React Hot Toast. All of the preferred stack — nothing swapped out. Tests use Vitest + React Testing Library.
+- React 18 + Vite
+- TypeScript (strict mode)
+- Tailwind CSS
+- React Router v6
+- Axios
+- TanStack Query
+- Zustand (persist middleware)
+- React Hook Form
+- Zod
+- React Hot Toast
+- Vitest + React Testing Library
 
-## Architecture: how state is split (the key decision)
+## Architecture
 
-The core rule is a strict separation between **server state** and **client state**:
+State is split by ownership — server state vs client state — with a single HTTP layer between the app and the API:
 
-- **TanStack Query** owns everything that comes from the API — products, categories, search results, product detail, profile. It handles caching, loading/error states, and retries.
-- **Zustand** owns the three things with no server equivalent — the auth session (tokens), favorites, and theme. Stores stay small and never duplicate server data.
-- **Axios** is a single configured instance (`api/client.ts`) with request/response interceptors. Components never call axios directly — everything goes through `api/*.api.ts`.
+```text
+Server State           Client State        HTTP Layer
+(TanStack Query)       (Zustand)           (Axios)
+│                      │                   │
+├── Products           ├── Auth            ├── Token injection
+├── Categories         ├── Favorites       ├── Silent refresh
+├── Product detail     └── Theme           └── 401 handling
+└── Profile
+```
 
-This keeps logout clean: clearing the query cache on logout guarantees one user's cached data never leaks into the next session on the same device.
 
 ## Auth & 401 handling
 
@@ -104,7 +123,7 @@ Every data-fetching view renders three states — loading, error (with retry), a
 | Bonus item | Done | Where / how to test |
 |------------|------|---------------------|
 | Silent token refresh | Yes | `src/api/client.ts` — 401 interceptor calls `/auth/refresh` once and replays the request before falling back to logout |
-| URL-synced state | Yes | `src/pages/ProductsPage.tsx` + `Navbar` — `?search=&category=&page=` in the URL; e.g. open `/?search=phone&page=2` and reload |
+| URL-synced state | Yes | `src/pages/ProductsPage.tsx` + `Navbar` — `?search=` and `?category=` in the URL; e.g. open `/?search=phone` or `/?category=smartphones` and reload (the list survives refresh and is shareable) |
 | Toasts / notifications | Yes | `src/App.tsx` (themed `Toaster`) + calls in `FavoriteButton`, `LoginPage`, and `client.ts` (added to favorites, login failed, session expired) |
 | Error Boundary | Yes | Top-level `src/components/common/ErrorBoundary.tsx` (wraps the app in `App.tsx`) **and** a route-level `errorElement` (`src/router/RouteErrorBoundary.tsx`) — both render the shared themed `ErrorFallback`. Test: comment out an import in any page to throw |
 | Form quality (schema validation) | Yes | `src/pages/LoginPage.tsx` — React Hook Form + Zod, inline errors, disabled-while-submitting, button loading state |
