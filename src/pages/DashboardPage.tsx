@@ -1,9 +1,12 @@
 import { useAuthStore } from "@/store/auth.store";
 import Button from "@/components/common/Button";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function DashboardPage() {
     const user = useAuthStore((s) => s.user);
     const logout = useAuthStore((s) => s.logout);
+
+    useDocumentTitle(user ? `${user.firstName} ${user.lastName}` : "Account");
 
     return (
         <div

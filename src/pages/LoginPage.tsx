@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth.store'
 import Button from '@/components/common/Button'
 import Input from '@/components/common/Input'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 const schema = z.object({
     username: z.string().min(1, 'Username is required'),
@@ -19,6 +20,8 @@ export default function LoginPage() {
     const location = useLocation()
     const login = useAuthStore((s) => s.login)
     const [apiError, setApiError] = useState('')
+
+    useDocumentTitle('Sign in')
 
     const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/'
 

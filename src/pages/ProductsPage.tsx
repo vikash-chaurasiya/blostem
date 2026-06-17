@@ -6,6 +6,7 @@ import ErrorState from "@/components/common/ErrorState";
 import EmptyState from "@/components/common/EmptyState";
 import Spinner from "@/components/common/Spinner";
 import Pagination from "@/components/common/Pagination";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const LIMIT = 10;
 
@@ -25,6 +26,14 @@ export default function ProductsPage() {
             return getProducts(LIMIT, skip);
         },
     });
+
+    const heading = search
+        ? `"${search}"`
+        : category
+        ? category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+        : "All Products";
+
+    useDocumentTitle(heading);
 
     const setPage = (next: number) => {
         const p: Record<string, string> = {};
@@ -49,12 +58,6 @@ export default function ProductsPage() {
     const products = data?.products ?? [];
     const total = data?.total ?? 0;
     const totalPages = Math.ceil(total / LIMIT);
-
-    const heading = search
-        ? `"${search}"`
-        : category
-        ? category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
-        : "All Products";
 
     return (
         <div className="page-wrapper">
