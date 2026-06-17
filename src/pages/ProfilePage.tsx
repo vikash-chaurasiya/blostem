@@ -50,8 +50,8 @@ export default function ProfilePage() {
                         src={profile.image}
                         alt={fullName}
                         style={{
-                            height: "5.5rem",
-                            width: "5.5rem",
+                            height: "5rem",
+                            width: "5rem",
                             borderRadius: "50%",
                             objectFit: "cover",
                             backgroundColor: "var(--bg)",
