@@ -6,20 +6,61 @@ export default function DashboardPage() {
     const logout = useAuthStore((s) => s.logout);
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-            <div className="w-full max-w-sm text-center space-y-4">
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    Dashboard
+        <div
+            style={{
+                minHeight: "calc(100vh - 3.5rem)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "var(--bg)",
+                padding: "1.5rem",
+            }}
+        >
+            <div style={{ width: "100%", maxWidth: "22rem", textAlign: "center" }}>
+
+                {user?.image && (
+                    <img
+                        src={user.image}
+                        alt={user.firstName}
+                        style={{
+                            height: "4rem",
+                            width: "4rem",
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            border: "2px solid var(--moss-light)",
+                            margin: "0 auto 1.25rem",
+                            display: "block",
+                        }}
+                    />
+                )}
+
+                <h1
+                    style={{
+                        fontFamily: "'Playfair Display', serif",
+                        fontSize: "1.5rem",
+                        fontWeight: 700,
+                        color: "var(--text)",
+                        letterSpacing: "-0.02em",
+                        marginBottom: "0.5rem",
+                    }}
+                >
+                    {user ? `${user.firstName} ${user.lastName}` : "Your account"}
                 </h1>
 
-                {user && (
-                    <p className="text-gray-600 dark:text-gray-300">
-                        Logged in as <span className="font-medium">{user.firstName} {user.lastName}</span>
+                {user?.email && (
+                    <p
+                        style={{
+                            fontSize: "0.8125rem",
+                            color: "var(--stone-400)",
+                            marginBottom: "2rem",
+                        }}
+                    >
+                        {user.email}
                     </p>
                 )}
 
                 <Button variant="secondary" onClick={logout}>
-                    Logout
+                    Sign out
                 </Button>
             </div>
         </div>

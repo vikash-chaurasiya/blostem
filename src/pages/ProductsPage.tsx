@@ -5,6 +5,7 @@ import ProductCard from "@/components/product/ProductCard";
 import ErrorState from "@/components/common/ErrorState";
 import EmptyState from "@/components/common/EmptyState";
 import Spinner from "@/components/common/Spinner";
+import Pagination from "@/components/common/Pagination";
 
 const LIMIT = 10;
 
@@ -26,16 +27,16 @@ export default function ProductsPage() {
     });
 
     const setPage = (next: number) => {
-        const params: Record<string, string> = {};
-        if (category) params.category = category;
-        if (search) params.search = search;
-        if (next > 1) params.page = String(next);
-        setSearchParams(params);
+        const p: Record<string, string> = {};
+        if (category) p.category = category;
+        if (search) p.search = search;
+        if (next > 1) p.page = String(next);
+        setSearchParams(p);
     };
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center py-24">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6rem 0" }}>
                 <Spinner size="lg" />
             </div>
         );
@@ -49,49 +50,55 @@ export default function ProductsPage() {
     const total = data?.total ?? 0;
     const totalPages = Math.ceil(total / LIMIT);
 
+    const heading = search
+        ? `"${search}"`
+        : category
+        ? category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+        : "All Products";
+
     return (
-        <div className="px-4 py-8">
-            <div className="max-w-7xl mx-auto">
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
-                    {search
-                        ? `Results for "${search}"`
-                        : category
-                        ? category.replace(/-/g, " ")
-                        : "All Products"}
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                    {total} product{total !== 1 ? "s" : ""}
-                </p>
+        <div className="page-wrapper">
+            <div style={{ maxWidth: "80rem", margin: "0 auto" }}>
+
+                {/* Page header */}
+                <div style={{ marginBottom: "2rem", paddingBottom: "1.25rem", borderBottom: "1px solid var(--border)" }}>
+                    <h1
+                        style={{
+                            fontFamily: "'Playfair Display', serif",
+                            fontSize: "clamp(1.5rem, 3vw, 2.25rem)",
+                            fontWeight: 700,
+                            color: "var(--text)",
+                            lineHeight: 1.15,
+                            letterSpacing: "-0.02em",
+                            marginBottom: "0.25rem",
+                        }}
+                    >
+                        {heading}
+                    </h1>
+                    <p
+                        style={{
+                            fontSize: "0.75rem",
+                            color: "var(--stone-400)",
+                            letterSpacing: "0.06em",
+                            textTransform: "uppercase",
+                        }}
+                    >
+                        {total} {total === 1 ? "item" : "items"}
+                    </p>
+                </div>
 
                 {products.length === 0 ? (
-                    <EmptyState message="No products found." />
+                    <EmptyState message="Nothing here yet." />
                 ) : (
                     <>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        <div className="product-grid">
                             {products.map((product) => (
                                 <ProductCard key={product.id} product={product} />
                             ))}
                         </div>
 
-                        <div className="mt-8 flex items-center justify-center gap-4">
-                            <button
-                                disabled={page === 1}
-                                onClick={() => setPage(page - 1)}
-                                className="px-4 py-2 text-sm rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
-                            >
-                                Prev
-                            </button>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                                {page} / {totalPages}
-                            </span>
-                            <button
-                                disabled={page >= totalPages}
-                                onClick={() => setPage(page + 1)}
-                                className="px-4 py-2 text-sm rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
-                            >
-                                Next
-                            </button>
-                        </div>
+                        {/* Pagination */}
+                        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
                     </>
                 )}
             </div>

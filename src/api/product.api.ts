@@ -46,3 +46,11 @@ export const getCategoryList = async (): Promise<string[]> => {
     const { data } = await apiClient.get<string[]>("/products/category-list");
     return data;
 };
+
+export const getCategoryThumbnail = async (slug: string): Promise<string> => {
+    const { data } = await apiClient.get<ProductsResponse>(
+        `/products/category/${slug}`,
+        { params: { limit: 1, select: "thumbnail" } }
+    );
+    return data.products[0]?.thumbnail ?? "";
+};

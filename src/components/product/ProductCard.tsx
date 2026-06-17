@@ -9,23 +9,79 @@ export default function ProductCard({ product }: ProductCardProps) {
     return (
         <Link
             to={`/product/${product.id}`}
-            className="group rounded-xl bg-gray-100 dark:bg-slate-900 overflow-hidden hover:ring-2 hover:ring-indigo-500 transition-all"
+            className="card-stem group"
+            style={{
+                position: "relative",
+                display: "block",
+                backgroundColor: "var(--bg-card)",
+                overflow: "hidden",
+                borderRadius: "3px",
+                textDecoration: "none",
+                transition: "box-shadow 0.25s ease",
+            }}
+            onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 24px color-mix(in srgb, var(--text) 10%, transparent)";
+            }}
+            onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow = "none";
+            }}
         >
-            <img
-                src={product.thumbnail}
-                alt={product.title}
-                className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-            <div className="p-3">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+            {/* Product image — 3:4 portrait ratio */}
+            <div style={{ position: "relative", paddingBottom: "75%", overflow: "hidden" }}>
+                <img
+                    src={product.thumbnail}
+                    alt={product.title}
+                    style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        transition: "transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                    }}
+                    className="group-hover:scale-[1.04]"
+                />
+            </div>
+
+            {/* Card body */}
+            <div style={{ padding: "0.75rem 0.875rem 0.875rem" }}>
+                <h3
+                    style={{
+                        fontFamily: "'Playfair Display', serif",
+                        fontSize: "0.875rem",
+                        fontWeight: 600,
+                        color: "var(--text)",
+                        lineHeight: 1.35,
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        marginBottom: "0.5rem",
+                    }}
+                >
                     {product.title}
                 </h3>
-                <div className="flex items-center justify-between mt-1">
-                    <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-                        ${product.price}
+
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <p
+                        style={{
+                            fontFamily: "'DM Mono', monospace",
+                            fontSize: "0.8125rem",
+                            fontWeight: 500,
+                            color: "var(--amber)",
+                            letterSpacing: "-0.02em",
+                        }}
+                    >
+                        ₹{product.price}
                     </p>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                        ⭐ {product.rating}
+                    <span
+                        style={{
+                            fontSize: "0.6875rem",
+                            color: "var(--stone-400)",
+                            letterSpacing: "0.02em",
+                        }}
+                    >
+                        ★ {product.rating}
                     </span>
                 </div>
             </div>

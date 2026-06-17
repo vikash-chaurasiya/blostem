@@ -12,19 +12,43 @@ export default function Button({
     className = '',
     children,
     disabled,
+    style,
     ...props
 }: ButtonProps) {
-    const base =
-        'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-    const variants = {
-        primary: 'bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600',
-        secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700',
-    }
+    const isPrimary = variant === 'primary';
 
     return (
         <button
-            className={`${base} ${variants[variant]} ${className}`}
+            className={className}
             disabled={disabled || loading}
+            style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5rem",
+                borderRadius: "4px",
+                padding: "0.625rem 1.25rem",
+                minHeight: "2.75rem",
+                fontSize: "0.8125rem",
+                fontWeight: 500,
+                letterSpacing: "0.02em",
+                cursor: disabled || loading ? "not-allowed" : "pointer",
+                opacity: disabled || loading ? 0.5 : 1,
+                border: "none",
+                transition: "background-color 0.15s, color 0.15s",
+                backgroundColor: isPrimary ? "var(--moss)" : "var(--bg-card)",
+                color: isPrimary ? "var(--stone-50)" : "var(--text)",
+                ...style,
+            }}
+            onMouseEnter={(e) => {
+                if (disabled || loading) return;
+                const el = e.currentTarget;
+                el.style.backgroundColor = isPrimary ? "var(--moss-light)" : "var(--stone-200)";
+            }}
+            onMouseLeave={(e) => {
+                const el = e.currentTarget;
+                el.style.backgroundColor = isPrimary ? "var(--moss)" : "var(--bg-card)";
+            }}
             {...props}
         >
             {loading && <Spinner size="sm" />}

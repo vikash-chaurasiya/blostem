@@ -5,6 +5,7 @@ import LoginPage from '@/pages/LoginPage'
 import ProductsPage from '@/pages/ProductsPage'
 import ProductDetailPage from '@/pages/ProductDetailPage'
 import DashboardPage from '@/pages/DashboardPage'
+import CategoriesPage from '@/pages/CategoriesPage'
 
 function Layout() {
     return (
@@ -21,6 +22,7 @@ export const router = createBrowserRouter([
             // Public — accessible without login
             { path: '/', element: <ProductsPage /> },
             { path: '/product/:id', element: <ProductDetailPage /> },
+            { path: '/categories', element: <CategoriesPage /> },
             { path: '/login', element: <LoginPage /> },
 
             // Protected — require login

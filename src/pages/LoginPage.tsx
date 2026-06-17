@@ -34,18 +34,50 @@ export default function LoginPage() {
             await login(values.username, values.password)
             navigate(from, { replace: true })
         } catch {
-            setApiError('Invalid username or password.')
+            setApiError('Username or password is incorrect.')
         }
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-            <div className="w-full max-w-sm">
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-8 text-center">
-                    Sign in
-                </h1>
+        <div
+            style={{
+                minHeight: "calc(100vh - 3.5rem)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "var(--bg)",
+                padding: "2rem 1rem",
+            }}
+        >
+            <div style={{ width: "100%", maxWidth: "22rem" }}>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+                {/* Brand mark */}
+                <div style={{ marginBottom: "2.5rem", textAlign: "center" }}>
+                    <span
+                        style={{
+                            fontFamily: "'Playfair Display', serif",
+                            fontSize: "1.75rem",
+                            fontWeight: 700,
+                            color: "var(--text)",
+                            letterSpacing: "-0.02em",
+                            display: "block",
+                            marginBottom: "0.5rem",
+                        }}
+                    >
+                        Blostem
+                    </span>
+                    <p
+                        style={{
+                            fontSize: "0.8125rem",
+                            color: "var(--stone-400)",
+                            letterSpacing: "0.01em",
+                        }}
+                    >
+                        Sign in to your account
+                    </p>
+                </div>
+
+                <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
                     <Input
                         label="Username"
                         autoComplete="username"
@@ -61,18 +93,60 @@ export default function LoginPage() {
                     />
 
                     {apiError && (
-                        <p className="text-sm text-red-600 dark:text-red-400">{apiError}</p>
+                        <p style={{ fontSize: "0.8125rem", color: "var(--red-err)" }}>{apiError}</p>
                     )}
 
-                    <Button type="submit" loading={isSubmitting} className="w-full mt-2">
+                    <Button type="submit" loading={isSubmitting} style={{ width: "100%", marginTop: "0.5rem" }}>
                         Sign in
                     </Button>
                 </form>
 
-                <div className="mt-6 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Test credentials</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">username: <span className="font-mono">emilys</span></p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">password: <span className="font-mono">emilyspass</span></p>
+                {/* Test credentials hint */}
+                <div
+                    style={{
+                        marginTop: "2rem",
+                        padding: "0.875rem",
+                        borderRadius: "4px",
+                        border: "1px solid var(--border)",
+                        backgroundColor: "var(--bg-card)",
+                    }}
+                >
+                    <p
+                        style={{
+                            fontSize: "0.6875rem",
+                            fontWeight: 600,
+                            letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                            color: "var(--stone-400)",
+                            marginBottom: "0.5rem",
+                        }}
+                    >
+                        Test credentials
+                    </p>
+                    <p style={{ fontSize: "0.8125rem", color: "var(--stone-600)", marginBottom: "0.25rem" }}>
+                        Username:{" "}
+                        <span
+                            style={{
+                                fontFamily: "'DM Mono', monospace",
+                                fontSize: "0.75rem",
+                                color: "var(--text)",
+                            }}
+                        >
+                            emilys
+                        </span>
+                    </p>
+                    <p style={{ fontSize: "0.8125rem", color: "var(--stone-600)" }}>
+                        Password:{" "}
+                        <span
+                            style={{
+                                fontFamily: "'DM Mono', monospace",
+                                fontSize: "0.75rem",
+                                color: "var(--text)",
+                            }}
+                        >
+                            emilyspass
+                        </span>
+                    </p>
                 </div>
             </div>
         </div>
