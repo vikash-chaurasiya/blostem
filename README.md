@@ -9,6 +9,8 @@ npm install
 npm run dev
 ```
 
+No environment variables are required — the app talks to the public DummyJSON API directly.
+
 Test credentials — `username: emilys` / `password: emilyspass`
 
 ## Stack
@@ -30,6 +32,8 @@ This keeps logout clean: clearing the query cache on logout guarantees one user'
 On load the app reads the persisted access token, calls `/auth/me` to verify and restore the session, and only then marks itself initialized (so guards don't flash). Only the tokens are persisted — the user object is re-fetched.
 
 The Axios response interceptor handles `401` with a **silent refresh**: it calls `/auth/refresh` once, swaps in the new token, and replays the original request. If refresh also fails (or the failing call was the auth flow itself), it logs out, clears the cache, shows a toast, and redirects to `/login` via the exported router singleton (not a hook, so it works outside React).
+
+The one exception is the background session-restore call: it's flagged (`_skipAuthRedirect`) so that an expired token on load fails quietly and the auth store cleans up — a returning user with a stale token is *not* bounced off a public page or shown a toast. Interactive 401s still redirect normally.
 
 ## Favorites
 
@@ -84,7 +88,7 @@ Every data-fetching view renders three states — loading, error (with retry), a
 | Silent token refresh | Yes | `src/api/client.ts` — 401 interceptor calls `/auth/refresh` once and replays the request before falling back to logout |
 | URL-synced state | Yes | `src/pages/ProductsPage.tsx` + `Navbar` — `?search=&category=&page=` in the URL; e.g. open `/?search=phone&page=2` and reload |
 | Toasts / notifications | Yes | `src/App.tsx` (themed `Toaster`) + calls in `FavoriteButton`, `LoginPage`, and `client.ts` (added to favorites, login failed, session expired) |
-| Error Boundary | Yes | `src/components/common/ErrorBoundary.tsx` wraps the app in `App.tsx`; themed fallback with recovery |
+| Error Boundary | Yes | Top-level `src/components/common/ErrorBoundary.tsx` (wraps the app in `App.tsx`) **and** a route-level `errorElement` (`src/router/RouteErrorBoundary.tsx`) — both render the shared themed `ErrorFallback`. Test: comment out an import in any page to throw |
 | Form quality (schema validation) | Yes | `src/pages/LoginPage.tsx` — React Hook Form + Zod, inline errors, disabled-while-submitting, button loading state |
 | Session expiry UX | Partial | On 401 the user gets a toast ("session expired") before the redirect, rather than a silent bounce |
 | Accessibility touches | Partial | `aria-label`/`aria-pressed` on favorite + icon buttons, `role="status"` on the spinner, `aria-current` on breadcrumb/active links |
@@ -107,12 +111,12 @@ src/
 ├── api/                  # Axios instance + interceptors, auth.api, product.api
 ├── components/
 │   ├── common/           # Button, Input, Spinner, ErrorState, EmptyState, ErrorBoundary,
-│   │                     #   Breadcrumb, StarRating, Pagination, ThemeToggle
+│   │                     #   ErrorFallback, Breadcrumb, StarRating, Pagination, ThemeToggle
 │   ├── layout/           # Navbar, MainLayout, Footer
 │   └── product/          # ProductCard, FavoriteButton, CustomerReviews
 ├── pages/                # Login, Products, ProductDetail, Favorites, Profile, Categories
-├── queries/              # TanStack Query hooks (useProduct, useProfile, useCategories)
-├── router/               # AppRouter (router singleton), ProtectedRoute, GuestRoute
+├── queries/              # useProducts, useSearchProducts, useProduct, useProfile, useCategories
+├── router/               # AppRouter (router singleton), ProtectedRoute, GuestRoute, RouteErrorBoundary
 ├── store/                # auth.store, favorites.store, theme.store
 ├── hooks/                # useDebounce, useDocumentTitle
 ├── types/                # auth, product, category, api
@@ -125,6 +129,10 @@ src/
 - Automated tests (Vitest + RTL) for the protected-route redirect, the auth store, and the 401 interceptor.
 - Skeleton loaders in place of spinners, and request cancellation (AbortController) on search.
 - Optimistic favorite toggles and `prefers-color-scheme` as the first-visit default.
+
+### Knowingly left out
+
+- **Search + category aren't combined.** Starting a search navigates to `/?search=…` and clears any active category filter (search is treated as a global override). The list stays URL-driven and bookmarkable, but a combined `?search=&category=` query isn't supported. Lifting the search input's state out of the Navbar and into the URL would be the clean fix.
 
 ## Trade-offs & assumptions
 
