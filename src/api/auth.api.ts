@@ -6,8 +6,10 @@ export const login = async (username: string, password: string): Promise<AuthRes
     return data
 }
 
+// Used only for silent session restore on load — a 401 here should quietly
+// fail (the auth store handles cleanup), not redirect off a public page.
 export const getMe = async (): Promise<User> => {
-    const { data } = await apiClient.get<User>('/auth/me')
+    const { data } = await apiClient.get<User>('/auth/me', { _skipAuthRedirect: true })
     return data
 }
 

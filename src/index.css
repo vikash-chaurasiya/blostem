@@ -26,6 +26,7 @@
     --text:      var(--stone-950);
     --text-muted:var(--stone-400);
     --border:    var(--stone-200);
+    --hover:     var(--stone-200);
 }
 
 .dark {
@@ -52,6 +53,7 @@
     --text:      var(--stone-50);
     --text-muted:var(--stone-400);
     --border:    var(--stone-800);
+    --hover:     var(--stone-800);
 }
 
 *,

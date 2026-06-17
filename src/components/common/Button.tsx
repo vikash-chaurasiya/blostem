@@ -43,7 +43,7 @@ export default function Button({
             onMouseEnter={(e) => {
                 if (disabled || loading) return;
                 const el = e.currentTarget;
-                el.style.backgroundColor = isPrimary ? "var(--moss-light)" : "var(--stone-200)";
+                el.style.backgroundColor = isPrimary ? "var(--moss-light)" : "var(--hover)";
             }}
             onMouseLeave={(e) => {
                 const el = e.currentTarget;

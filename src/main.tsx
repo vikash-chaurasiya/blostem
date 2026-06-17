@@ -5,8 +5,8 @@ import App from './App.tsx'
 import { useThemeStore } from '@/store/theme.store'
 
 // Apply persisted theme before first render to avoid dark/light flash
-const { mode } = useThemeStore.getState()
-document.documentElement.classList.toggle('dark', mode === 'dark')
+const { mode, setTheme } = useThemeStore.getState()
+setTheme(mode)
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

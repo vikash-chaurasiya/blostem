@@ -1,12 +1,12 @@
 import { useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { getProducts, getProductsByCategory, searchProducts } from "@/api/product.api";
 import ProductCard from "@/components/product/ProductCard";
 import ErrorState from "@/components/common/ErrorState";
 import EmptyState from "@/components/common/EmptyState";
 import Spinner from "@/components/common/Spinner";
 import Pagination from "@/components/common/Pagination";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useProducts } from "@/queries/useProducts";
+import { useSearchProducts } from "@/queries/useSearchProducts";
 import { PAGE_LIMIT } from "@/lib/constants";
 
 export default function ProductsPage() {
@@ -15,16 +15,10 @@ export default function ProductsPage() {
     const search = searchParams.get("search") ?? "";
     const page = Number(searchParams.get("page") ?? "1");
 
-    const skip = (page - 1) * PAGE_LIMIT;
-
-    const { data, isLoading, isError, error, refetch } = useQuery({
-        queryKey: ["products", page, category, search],
-        queryFn: () => {
-            if (search) return searchProducts(search, PAGE_LIMIT, skip);
-            if (category) return getProductsByCategory(category, PAGE_LIMIT, skip);
-            return getProducts(PAGE_LIMIT, skip);
-        },
-    });
+    const isSearching = search.trim().length > 0;
+    const productsQuery = useProducts(page, category, !isSearching);
+    const searchQuery = useSearchProducts(search, page, isSearching);
+    const { data, isLoading, isError, error, refetch } = isSearching ? searchQuery : productsQuery;
 
     const heading = search
         ? `"${search}"`

@@ -1,5 +1,4 @@
 import axios from "axios";
-import type { InternalAxiosRequestConfig } from "axios";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/auth.store";
 import { queryClient } from "@/lib/queryClient";
@@ -7,7 +6,14 @@ import { router } from "@/router/AppRouter";
 import { refreshToken as refreshTokenApi } from "@/api/auth.api";
 import { API_BASE_URL } from "@/lib/constants";
 
-type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+declare module "axios" {
+    export interface AxiosRequestConfig {
+        /** Set internally to avoid replaying a request more than once after refresh. */
+        _retry?: boolean;
+        /** Suppresses the logout-redirect/toast on 401 — used by the silent session restore. */
+        _skipAuthRedirect?: boolean;
+    }
+}
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -36,21 +42,26 @@ apiClient.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        const original = error.config as RetriableConfig | undefined;
+        const original = error.config;
         const url = original?.url ?? "";
         const isAuthCall = url.includes("/auth/login") || url.includes("/auth/refresh");
 
-        // No config, already retried once, or the failing call was the auth
-        // flow itself → don't loop; sign the user out.
-        if (!original || original._retry || isAuthCall) {
-            forceLogout();
+        // The session-restore call cleans up on its own — never bounce the user
+        // off a public page or toast for a background token check.
+        const giveUp = () => {
+            if (!original?._skipAuthRedirect) forceLogout();
             return Promise.reject(error);
+        };
+
+        // No config, already retried once, or the failing call was the auth
+        // flow itself → don't loop.
+        if (!original || original._retry || isAuthCall) {
+            return giveUp();
         }
 
         const storedRefresh = useAuthStore.getState().refreshToken;
         if (!storedRefresh) {
-            forceLogout();
-            return Promise.reject(error);
+            return giveUp();
         }
 
         // Silent refresh: swap the token once, then replay the original request.
@@ -61,8 +72,7 @@ apiClient.interceptors.response.use(
             original.headers.Authorization = `Bearer ${data.accessToken}`;
             return apiClient(original);
         } catch {
-            forceLogout();
-            return Promise.reject(error);
+            return giveUp();
         }
     }
 );
