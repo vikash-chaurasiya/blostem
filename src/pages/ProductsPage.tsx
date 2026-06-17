@@ -1,24 +1,31 @@
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "@/components/product/ProductCard";
 import ErrorState from "@/components/common/ErrorState";
 import EmptyState from "@/components/common/EmptyState";
 import Spinner from "@/components/common/Spinner";
-import Pagination from "@/components/common/Pagination";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useProducts } from "@/queries/useProducts";
 import { useSearchProducts } from "@/queries/useSearchProducts";
-import { PAGE_LIMIT } from "@/lib/constants";
 
 export default function ProductsPage() {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const category = searchParams.get("category") ?? "";
     const search = searchParams.get("search") ?? "";
-    const page = Number(searchParams.get("page") ?? "1");
 
     const isSearching = search.trim().length > 0;
-    const productsQuery = useProducts(page, category, !isSearching);
-    const searchQuery = useSearchProducts(search, page, isSearching);
-    const { data, isLoading, isError, error, refetch } = isSearching ? searchQuery : productsQuery;
+    const productsQuery = useProducts(category, !isSearching);
+    const searchQuery = useSearchProducts(search, isSearching);
+    const {
+        data,
+        isLoading,
+        isError,
+        error,
+        refetch,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = isSearching ? searchQuery : productsQuery;
 
     const heading = search
         ? `"${search}"`
@@ -28,13 +35,22 @@ export default function ProductsPage() {
 
     useDocumentTitle(heading);
 
-    const setPage = (next: number) => {
-        const p: Record<string, string> = {};
-        if (category) p.category = category;
-        if (search) p.search = search;
-        if (next > 1) p.page = String(next);
-        setSearchParams(p);
-    };
+    // Load the next page when the sentinel scrolls into view.
+    const loadMoreRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const el = loadMoreRef.current;
+        if (!el || !hasNextPage) return;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage();
+                }
+            },
+            { rootMargin: "300px" }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     if (isLoading) {
         return (
@@ -48,9 +64,8 @@ export default function ProductsPage() {
         return <ErrorState message={(error as Error).message} onRetry={() => refetch()} />;
     }
 
-    const products = data?.products ?? [];
-    const total = data?.total ?? 0;
-    const totalPages = Math.ceil(total / PAGE_LIMIT);
+    const products = data?.pages.flatMap((p) => p.products) ?? [];
+    const total = data?.pages[0]?.total ?? 0;
 
     return (
         <div className="page-wrapper">
@@ -93,8 +108,19 @@ export default function ProductsPage() {
                             ))}
                         </div>
 
-                        {/* Pagination */}
-                        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+                        {/* Infinite-scroll sentinel + loading indicator */}
+                        <div
+                            ref={loadMoreRef}
+                            style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "2.5rem 0 1rem", minHeight: "1px" }}
+                        >
+                            {isFetchingNextPage ? (
+                                <Spinner size="md" />
+                            ) : !hasNextPage ? (
+                                <span style={{ fontSize: "0.75rem", color: "var(--stone-400)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                                    You've reached the end
+                                </span>
+                            ) : null}
+                        </div>
                     </>
                 )}
             </div>

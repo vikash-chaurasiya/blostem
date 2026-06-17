@@ -84,9 +84,12 @@ export default function ProfilePage() {
                         </p>
                     </div>
 
-                    <Button variant="secondary" onClick={logout} style={{ flexShrink: 0 }}>
-                        Sign out
-                    </Button>
+                    {/* Hidden on mobile — the navbar menu has Sign out there */}
+                    <div className="desktop-only">
+                        <Button variant="secondary" onClick={logout} style={{ flexShrink: 0 }}>
+                            Sign out
+                        </Button>
+                    </div>
                 </header>
 
                 {/* ── Detail sections ── */}

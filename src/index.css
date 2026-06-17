@@ -228,6 +228,18 @@ body {
     gap: 1rem 1.5rem;
 }
 
+/* Utility: hide below the sm breakpoint. `contents` on desktop keeps the
+   wrapped element behaving as a direct flex child. */
+.desktop-only {
+    display: none;
+}
+
+@media (min-width: 640px) {
+    .desktop-only {
+        display: contents;
+    }
+}
+
 /* Profile detail sections — single column on mobile, two on larger screens */
 .profile-grid {
     display: grid;

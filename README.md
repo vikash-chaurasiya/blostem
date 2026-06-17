@@ -92,7 +92,7 @@ Every data-fetching view renders three states — loading, error (with retry), a
 - [x] 401 response handling (clear session → cleanup → redirect to login)
 - [x] Product list with debounced search (400ms)
 - [x] Category filter
-- [x] Pagination (limit/skip)
+- [x] Infinite scroll (limit/skip, via `useInfiniteQuery` + IntersectionObserver)
 - [x] Product detail page
 - [x] Add/remove favorites (from list + detail)
 - [x] Favorites persist and are scoped per user
@@ -130,7 +130,7 @@ src/
 ├── api/                  # Axios instance + interceptors, auth.api, product.api
 ├── components/
 │   ├── common/           # Button, Input, Spinner, ErrorState, EmptyState, ErrorBoundary,
-│   │                     #   ErrorFallback, Breadcrumb, StarRating, Pagination, ThemeToggle
+│   │                     #   ErrorFallback, Breadcrumb, StarRating, ThemeToggle
 │   ├── layout/           # Navbar, MainLayout, Footer
 │   └── product/          # ProductCard, FavoriteButton, CustomerReviews
 ├── pages/                # Login, Products, ProductDetail, Favorites, Profile, Categories
