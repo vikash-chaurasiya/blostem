@@ -11,11 +11,17 @@ npm run dev
 
 No environment variables are required — the app talks to the public DummyJSON API directly.
 
+Run the tests with:
+
+```bash
+npm test
+```
+
 Test credentials — `username: emilys` / `password: emilyspass`
 
 ## Stack
 
-React 18 + Vite, TypeScript (strict), Tailwind CSS, React Router v6, Axios, TanStack Query, Zustand, React Hook Form + Zod, React Hot Toast. All of the preferred stack — nothing swapped out.
+React 18 + Vite, TypeScript (strict), Tailwind CSS, React Router v6, Axios, TanStack Query, Zustand, React Hook Form + Zod, React Hot Toast. All of the preferred stack — nothing swapped out. Tests use Vitest + React Testing Library.
 
 ## Architecture: how state is split (the key decision)
 
@@ -43,7 +49,19 @@ Stored as `Record<userId, productId[]>`, persisted to localStorage, so they surv
 
 Light/dark toggle driven entirely by CSS variable tokens (`index.css`) under a `dark` class on `<html>`. No colors are hardcoded in components — they all reference tokens, so both themes (and accent contrast) are config-driven. The choice is persisted and applied in `main.tsx` before first render to avoid a flash.
 
-## Testing the empty & error states
+## Automated tests
+
+`npm test` runs the suite (Vitest + React Testing Library, jsdom). It covers the three highest-value targets called out in the brief:
+
+| Suite | What it verifies |
+|-------|------------------|
+| `src/store/auth.store.test.ts` | `login` stores tokens + user; `logout` clears auth, the user's favorites, and the query cache; `restoreSession` for the no-token / valid-token / bad-token paths |
+| `src/router/guards.test.tsx` | `ProtectedRoute` redirects guests to `/login`, renders content when authed, and renders nothing pre-init (no flash); `GuestRoute` redirects authed users away from `/login` |
+| `src/api/client.test.ts` | the 401 interceptor — logout + redirect when there's no refresh token, **silent refresh + replay** of the original request, logout when refresh also fails, and no retry loop |
+
+14 tests in total. Test files live next to the code they cover (`*.test.ts(x)`).
+
+## Testing the empty & error states (manually)
 
 Every data-fetching view renders three states — loading, error (with retry), and empty. The empty and error states can be triggered manually without any tooling:
 
@@ -92,8 +110,9 @@ Every data-fetching view renders three states — loading, error (with retry), a
 | Form quality (schema validation) | Yes | `src/pages/LoginPage.tsx` — React Hook Form + Zod, inline errors, disabled-while-submitting, button loading state |
 | Session expiry UX | Partial | On 401 the user gets a toast ("session expired") before the redirect, rather than a silent bounce |
 | Accessibility touches | Partial | `aria-label`/`aria-pressed` on favorite + icon buttons, `role="status"` on the spinner, `aria-current` on breadcrumb/active links |
+| Tests (Vitest + RTL) | Yes | `npm test` — 14 tests across 3 suites: the auth store (`src/store/auth.store.test.ts`), the route guards (`src/router/guards.test.tsx`), and the 401 interceptor incl. silent refresh (`src/api/client.test.ts`) |
 
-**Not attempted:** cart, optimistic UI, automated tests, code-splitting/virtualization, request cancellation (AbortController), skeleton loaders, `prefers-color-scheme` default.
+**Not attempted:** cart, optimistic UI, code-splitting/virtualization, request cancellation (AbortController), skeleton loaders, `prefers-color-scheme` default.
 
 ### Extra (not in the spec)
 
@@ -121,12 +140,15 @@ src/
 ├── hooks/                # useDebounce, useDocumentTitle
 ├── types/                # auth, product, category, api
 ├── lib/                  # constants, queryClient, theme
+├── test/                 # Vitest setup (jest-dom matchers, cleanup)
 └── App.tsx / main.tsx    # providers + session restore; theme init before first render
+
+# Tests sit beside the code: auth.store.test.ts, router/guards.test.tsx, api/client.test.ts
 ```
 
 ## What I'd improve with more time
 
-- Automated tests (Vitest + RTL) for the protected-route redirect, the auth store, and the 401 interceptor.
+- Broaden test coverage to the data-fetching hooks and key page flows (the current suites cover the auth store, route guards, and 401 interceptor).
 - Skeleton loaders in place of spinners, and request cancellation (AbortController) on search.
 - Optimistic favorite toggles and `prefers-color-scheme` as the first-visit default.
 
