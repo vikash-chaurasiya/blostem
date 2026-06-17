@@ -1,30 +1,54 @@
 interface SpinnerProps {
     size?: 'sm' | 'md' | 'lg'
+    /** Arc color. Defaults to the moss brand accent; pass a contrasting
+        color (e.g. on a colored button) so the spinner stays visible. */
+    color?: string
 }
 
 const sizeMap = {
     sm: 16,
     md: 24,
-    lg: 32,
+    lg: 40,
 }
 
-export default function Spinner({ size = 'md' }: SpinnerProps) {
+export default function Spinner({ size = 'md', color = 'var(--moss)' }: SpinnerProps) {
     const px = sizeMap[size];
+    const r = 10;
+    const circumference = 2 * Math.PI * r;
+    // A quarter-circle arc over a faint full track of the same hue.
+    const arc = circumference * 0.28;
+
     return (
-        <svg
-            className="animate-spin"
-            width={px}
-            height={px}
-            fill="none"
-            viewBox="0 0 24 24"
-            style={{ color: "var(--moss)" }}
+        <span
+            role="status"
+            aria-label="Loading"
+            style={{ display: "inline-flex", lineHeight: 0, color }}
         >
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-            <path
-                className="opacity-80"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 22 6.477 22 12h-4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-        </svg>
-    )
+            <svg
+                className="animate-spin"
+                width={px}
+                height={px}
+                viewBox="0 0 24 24"
+                fill="none"
+            >
+                <circle
+                    cx="12"
+                    cy="12"
+                    r={r}
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    opacity="0.2"
+                />
+                <circle
+                    cx="12"
+                    cy="12"
+                    r={r}
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeDasharray={`${arc} ${circumference}`}
+                />
+            </svg>
+        </span>
+    );
 }
