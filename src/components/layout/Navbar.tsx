@@ -121,7 +121,7 @@ export default function Navbar() {
                                     to="/favorites"
                                     style={({ isActive }) => navLinkStyle(isActive)}
                                 >
-                                    Saved
+                                    Favorites
                                 </NavLink>
                                 <NavLink
                                     to="/profile"
@@ -211,7 +211,7 @@ export default function Navbar() {
                             borderBottom: "1px solid var(--border)",
                         })}
                     >
-                        Saved
+                        Favorites
                     </NavLink>
                     <NavLink
                         to="/profile"

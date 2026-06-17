@@ -51,7 +51,7 @@ export default function Button({
             }}
             {...props}
         >
-            {loading && <Spinner size="sm" />}
+            {loading && <Spinner size="sm" color={isPrimary ? "var(--stone-50)" : "var(--text)"} />}
             {children}
         </button>
     )

@@ -2,12 +2,13 @@ import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom'
 import MainLayout from '@/components/layout/MainLayout'
 import ProtectedRoute from './ProtectedRoute'
 import GuestRoute from './GuestRoute'
+import RouteErrorBoundary from './RouteErrorBoundary'
 import LoginPage from '@/pages/LoginPage'
 import ProductsPage from '@/pages/ProductsPage'
 import ProductDetailPage from '@/pages/ProductDetailPage'
-import DashboardPage from '@/pages/DashboardPage'
 import CategoriesPage from '@/pages/CategoriesPage'
 import ProfilePage from '@/pages/ProfilePage'
+import FavoritesPage from '@/pages/FavoritesPage'
 
 function Layout() {
     return (
@@ -20,6 +21,7 @@ function Layout() {
 export const router = createBrowserRouter([
     {
         element: <Layout />,
+        errorElement: <RouteErrorBoundary />,
         children: [
             // Public — accessible without login
             { path: '/', element: <ProductsPage /> },
@@ -38,7 +40,7 @@ export const router = createBrowserRouter([
             {
                 element: <ProtectedRoute />,
                 children: [
-                    { path: '/favorites', element: <DashboardPage /> }, // placeholder
+                    { path: '/favorites', element: <FavoritesPage /> },
                     { path: '/profile', element: <ProfilePage /> },
                 ],
             },

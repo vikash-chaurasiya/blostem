@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { Product } from "@/types/product";
+import FavoriteButton from "./FavoriteButton";
 
 interface ProductCardProps {
     product: Product;
@@ -28,6 +29,9 @@ export default function ProductCard({ product }: ProductCardProps) {
         >
             {/* Product image — 3:4 portrait ratio */}
             <div style={{ position: "relative", paddingBottom: "75%", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: "0.5rem", right: "0.5rem", zIndex: 2 }}>
+                    <FavoriteButton productId={product.id} title={product.title} />
+                </div>
                 <img
                     src={product.thumbnail}
                     alt={product.title}
@@ -57,6 +61,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",
                         marginBottom: "0.5rem",
+                        opacity: 0.9,
                     }}
                 >
                     {product.title}

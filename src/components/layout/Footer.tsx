@@ -9,6 +9,7 @@ export default function Footer() {
                         fontWeight: 600,
                         color: "var(--text)",
                         letterSpacing: "-0.01em",
+                        opacity: 0.8,
                     }}
                 >
                     Blostem

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { login as loginApi, getMe } from "@/api/auth.api";
 import { queryClient } from "@/lib/queryClient";
+import { useFavoritesStore } from "@/store/favorites.store";
 import type { User } from "@/types/auth";
 
 interface AuthState {
@@ -44,6 +45,10 @@ export const useAuthStore = create<AuthState>()(
          },
 
          logout: () => {
+            const userId = get().user?.id;
+            if (userId != null) {
+               useFavoritesStore.getState().clearUserFavorites(userId);
+            }
             queryClient.clear();
             set({
                accessToken: null,

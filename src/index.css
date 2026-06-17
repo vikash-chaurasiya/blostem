@@ -29,6 +29,23 @@
 }
 
 .dark {
+    /* Brighten the mid stone tones in dark mode so secondary/muted text
+       (nav links, category tabs, descriptions, meta values) stays legible
+       against the near-black background. These tokens are only ever used
+       as text/icon colors, never as backgrounds or borders. */
+    --stone-600: #C5C2BC;   /* secondary text — prominent */
+    --stone-400: #A8A5A0;   /* muted text/labels — dimmer than secondary, still legible */
+    --stone-300: #6F6C66;   /* faint separators/placeholder icons */
+
+    /* Brighten the moss accent in dark mode. The base #4A6741 is too dark to
+       read as accent text on the near-black bg. #6B9462 stays dark enough for
+       white button labels (Sign in, pagination) yet reads clearly as an accent.
+       moss-pale flips to a dark green chip so badge text (discount %, role)
+       inverts correctly instead of dark-green-on-light. */
+    --moss:      #6B9462;
+    --moss-light:#86B07B;
+    --moss-pale: #222D1F;
+
     --bg:        var(--stone-950);
     --bg-card:   var(--stone-900);
     --bg-input:  var(--stone-800);

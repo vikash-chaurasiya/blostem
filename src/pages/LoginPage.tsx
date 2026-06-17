@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -35,9 +36,11 @@ export default function LoginPage() {
         setApiError('')
         try {
             await login(values.username, values.password)
+            toast.success('Welcome back!')
             navigate(from, { replace: true })
         } catch {
             setApiError('Username or password is incorrect.')
+            toast.error('Login failed — check your credentials.')
         }
     }
 

@@ -1,6 +1,6 @@
 # Mini Product Store
 
-A product browsing app where users can search, filter, and save favorites. Built as a frontend take-home assignment.
+A single-page product store where users browse products, search and filter, log in, and manage a personal, per-user favorites list. Built as a frontend take-home — the focus is production-quality structure, type safety, and state separation rather than feature count.
 
 ## Running locally
 
@@ -13,45 +13,120 @@ Test credentials — `username: emilys` / `password: emilyspass`
 
 ## Stack
 
-React 18, TypeScript (strict), Tailwind CSS, React Router v6, Axios, TanStack Query, Zustand, React Hook Form + Zod, React Hot Toast.
+React 18 + Vite, TypeScript (strict), Tailwind CSS, React Router v6, Axios, TanStack Query, Zustand, React Hook Form + Zod, React Hot Toast. All of the preferred stack — nothing swapped out.
 
-## How state is split
+## Architecture: how state is split (the key decision)
 
-TanStack Query handles everything that comes from the server — products, categories, search results, profile. Zustand handles the three things that have no server equivalent: the auth session, the favorites list, and the theme preference.
+The core rule is a strict separation between **server state** and **client state**:
 
-This keeps the stores small, avoids duplicating data, and makes logout clean — clearing the query cache on logout ensures one user's data never leaks to the next session on the same device.
+- **TanStack Query** owns everything that comes from the API — products, categories, search results, product detail, profile. It handles caching, loading/error states, and retries.
+- **Zustand** owns the three things with no server equivalent — the auth session (tokens), favorites, and theme. Stores stay small and never duplicate server data.
+- **Axios** is a single configured instance (`api/client.ts`) with request/response interceptors. Components never call axios directly — everything goes through `api/*.api.ts`.
+
+This keeps logout clean: clearing the query cache on logout guarantees one user's cached data never leaks into the next session on the same device.
+
+## Auth & 401 handling
+
+On load the app reads the persisted access token, calls `/auth/me` to verify and restore the session, and only then marks itself initialized (so guards don't flash). Only the tokens are persisted — the user object is re-fetched.
+
+The Axios response interceptor handles `401` with a **silent refresh**: it calls `/auth/refresh` once, swaps in the new token, and replays the original request. If refresh also fails (or the failing call was the auth flow itself), it logs out, clears the cache, shows a toast, and redirects to `/login` via the exported router singleton (not a hook, so it works outside React).
 
 ## Favorites
 
-Stored as `Record<userId, productId[]>` so they stay scoped per user even if two accounts are used on the same device. Persisted to localStorage.
+Stored as `Record<userId, productId[]>`, persisted to localStorage, so they survive reloads and stay scoped per user — user A's favorites never show for user B on the same device. Toggle from both the product list (heart on each card) and the detail page. Logout clears the current user's favorites (per the brief's cleanup requirement).
 
-## Auth
+## Theming
 
-On page load the app reads the stored access token, calls `/auth/me` to verify it, and restores the session. If the token is expired a silent refresh is attempted before falling back to logout. The Axios 401 interceptor uses a router singleton (not a hook) so it can navigate programmatically outside React.
+Light/dark toggle driven entirely by CSS variable tokens (`index.css`) under a `dark` class on `<html>`. No colors are hardcoded in components — they all reference tokens, so both themes (and accent contrast) are config-driven. The choice is persisted and applied in `main.tsx` before first render to avoid a flash.
 
-## Bonus features included
+## Testing the empty & error states
 
-URL-synced search and filters, silent token refresh, skeleton loaders, error boundary, request cancellation with AbortController, toast notifications.
+Every data-fetching view renders three states — loading, error (with retry), and empty. The empty and error states can be triggered manually without any tooling:
+
+**Empty state** (`EmptyState`, shown on the product list / favorites when a query returns no results):
+
+- Search for gibberish in the navbar, e.g. `zzzzzzzz`, or open `/?search=zzzzzzzz` directly. DummyJSON returns an empty array → "Nothing here yet."
+
+**Error state** (`ErrorState`, shown on the product list, product detail, categories, and profile pages):
+
+- **Invalid product (real 404):** open `/product/999999` — DummyJSON responds 404, so the detail page shows the error with a working "Try again" button. `/product/abc` shows it too (id is `NaN`, the query is disabled and no product resolves).
+- **Network failure (any page):** in DevTools → Network, set throttling to **Offline**, then reload or refetch. The request fails and the error state appears. Switch back to **No throttling** and click **Try again** to confirm recovery. Note: TanStack Query retries a failed query 3× before flipping to `isError`, so the error takes a moment to show while offline.
+- **Profile page:** log in first (the profile query is gated on auth), then go offline and reload `/profile`.
+
+---
+
+## Self-Assessment & Completed Work
+
+### Core requirements
+
+- [x] Public + protected routes
+- [x] Redirect to login when not authenticated
+- [x] Redirect back to the originally requested page after login
+- [x] Logged-in user redirected away from `/login`
+- [x] Login + inline validation + error on bad credentials
+- [x] Session persists across refresh (restored via token + `/auth/me`)
+- [x] Working logout with state cleanup (auth + favorites + query cache)
+- [x] Single configured HTTP client with auto token injection
+- [x] 401 response handling (clear session → cleanup → redirect to login)
+- [x] Product list with debounced search (400ms)
+- [x] Category filter
+- [x] Pagination (limit/skip)
+- [x] Product detail page
+- [x] Add/remove favorites (from list + detail)
+- [x] Favorites persist and are scoped per user
+- [x] Dark / light mode toggle via config (not hardcoded), persisted
+- [x] Loading / error / empty states everywhere data is fetched
+
+### Bonus items attempted
+
+| Bonus item | Done | Where / how to test |
+|------------|------|---------------------|
+| Silent token refresh | Yes | `src/api/client.ts` — 401 interceptor calls `/auth/refresh` once and replays the request before falling back to logout |
+| URL-synced state | Yes | `src/pages/ProductsPage.tsx` + `Navbar` — `?search=&category=&page=` in the URL; e.g. open `/?search=phone&page=2` and reload |
+| Toasts / notifications | Yes | `src/App.tsx` (themed `Toaster`) + calls in `FavoriteButton`, `LoginPage`, and `client.ts` (added to favorites, login failed, session expired) |
+| Error Boundary | Yes | `src/components/common/ErrorBoundary.tsx` wraps the app in `App.tsx`; themed fallback with recovery |
+| Form quality (schema validation) | Yes | `src/pages/LoginPage.tsx` — React Hook Form + Zod, inline errors, disabled-while-submitting, button loading state |
+| Session expiry UX | Partial | On 401 the user gets a toast ("session expired") before the redirect, rather than a silent bounce |
+| Accessibility touches | Partial | `aria-label`/`aria-pressed` on favorite + icon buttons, `role="status"` on the spinner, `aria-current` on breadcrumb/active links |
+
+**Not attempted:** cart, optimistic UI, automated tests, code-splitting/virtualization, request cancellation (AbortController), skeleton loaders, `prefers-color-scheme` default.
+
+### Extra (not in the spec)
+
+- Dynamic per-page document titles (`Blostem | …`) via a `useDocumentTitle` hook.
+- Branded favicon + `theme-color`.
+- Reusable `Breadcrumb`, `StarRating`, and `CustomerReviews` components.
+- Dark-mode contrast tuning so accent/secondary text stays legible (tokens brightened in the `.dark` block).
+
+---
 
 ## Project structure
 
 ```
 src/
-├── api/                  # Axios instance + API functions
+├── api/                  # Axios instance + interceptors, auth.api, product.api
 ├── components/
-│   ├── common/           # Button, Input, Spinner, ErrorState, EmptyState, ThemeToggle
-│   ├── layout/           # Navbar, MainLayout
-│   └── product/          # ProductCard, ProductGrid, SearchBar, CategoryFilter, Pagination
-├── pages/                # LoginPage, ProductsPage, ProductDetailPage, FavoritesPage, ProfilePage
-├── queries/              # TanStack Query hooks (useProducts, useProduct, useCategories, useProfile)
-├── router/               # AppRouter, ProtectedRoute, GuestRoute
+│   ├── common/           # Button, Input, Spinner, ErrorState, EmptyState, ErrorBoundary,
+│   │                     #   Breadcrumb, StarRating, Pagination, ThemeToggle
+│   ├── layout/           # Navbar, MainLayout, Footer
+│   └── product/          # ProductCard, FavoriteButton, CustomerReviews
+├── pages/                # Login, Products, ProductDetail, Favorites, Profile, Categories
+├── queries/              # TanStack Query hooks (useProduct, useProfile, useCategories)
+├── router/               # AppRouter (router singleton), ProtectedRoute, GuestRoute
 ├── store/                # auth.store, favorites.store, theme.store
-├── hooks/                # useDebounce
+├── hooks/                # useDebounce, useDocumentTitle
 ├── types/                # auth, product, category, api
-├── lib/                  # queryClient, constants, theme, utils
-└── providers/            # QueryProvider
+├── lib/                  # constants, queryClient, theme
+└── App.tsx / main.tsx    # providers + session restore; theme init before first render
 ```
 
-## What I'd add with more time
+## What I'd improve with more time
 
-Tests (Vitest + React Testing Library), optimistic favorite toggles, better accessibility.
+- Automated tests (Vitest + RTL) for the protected-route redirect, the auth store, and the 401 interceptor.
+- Skeleton loaders in place of spinners, and request cancellation (AbortController) on search.
+- Optimistic favorite toggles and `prefers-color-scheme` as the first-visit default.
+
+## Trade-offs & assumptions
+
+- **Favorites cleared on logout:** the brief asks logout to clear user-specific data, so the current user's favorites are cleared. Because favorites are keyed by `userId`, cross-user leakage is already impossible; if persistence across logout were preferred, removing the `clearUserFavorites` call in `auth.store` would achieve it.
+- **Two `/auth/me` shapes:** session restore uses a minimal `User`; the profile page uses a richer `ProfileUser` — both hit the same endpoint, typed separately to keep the auth store lean.

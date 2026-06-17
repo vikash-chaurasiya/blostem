@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useProduct } from "@/queries/useProduct";
 import Spinner from "@/components/common/Spinner";
 import ErrorState from "@/components/common/ErrorState";
 import StarRating from "@/components/common/StarRating";
+import Breadcrumb from "@/components/common/Breadcrumb";
 import CustomerReviews from "@/components/product/CustomerReviews";
+import FavoriteButton from "@/components/product/FavoriteButton";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function ProductDetailPage() {
@@ -36,29 +38,13 @@ export default function ProductDetailPage() {
             <div style={{ maxWidth: "72rem", margin: "0 auto" }}>
 
                 {/* Breadcrumb */}
-                <nav style={{ marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                    <Link
-                        to="/"
-                        style={{ fontSize: "0.75rem", color: "var(--stone-400)", textDecoration: "none", letterSpacing: "0.04em", textTransform: "uppercase" }}
-                        onMouseEnter={(e) => { e.currentTarget.style.color = "var(--moss)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = "var(--stone-400)"; }}
-                    >
-                        Shop
-                    </Link>
-                    <span style={{ fontSize: "0.75rem", color: "var(--stone-300)" }}>›</span>
-                    <Link
-                        to={`/?category=${product.category}`}
-                        style={{ fontSize: "0.75rem", color: "var(--stone-400)", textDecoration: "none", letterSpacing: "0.04em", textTransform: "uppercase" }}
-                        onMouseEnter={(e) => { e.currentTarget.style.color = "var(--moss)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = "var(--stone-400)"; }}
-                    >
-                        {product.category.replace(/-/g, " ")}
-                    </Link>
-                    <span style={{ fontSize: "0.75rem", color: "var(--stone-300)" }}>›</span>
-                    <span style={{ fontSize: "0.75rem", color: "var(--stone-600)", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                        {product.title}
-                    </span>
-                </nav>
+                <Breadcrumb
+                    items={[
+                        { label: "Shop", to: "/" },
+                        { label: product.category.replace(/-/g, " "), to: `/?category=${product.category}` },
+                        { label: product.title },
+                    ]}
+                />
 
                 {/* Main layout: images + info */}
                 <div className="product-detail-layout">
@@ -183,6 +169,11 @@ export default function ProductDetailPage() {
                             }}>
                                 {product.availabilityStatus ?? (stockLow ? `Only ${product.stock} left` : "In stock")}
                             </span>
+                        </div>
+
+                        {/* Favorite */}
+                        <div style={{ marginBottom: "2rem" }}>
+                            <FavoriteButton productId={product.id} title={product.title} withLabel />
                         </div>
 
                         {/* Description */}

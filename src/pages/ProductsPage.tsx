@@ -7,8 +7,7 @@ import EmptyState from "@/components/common/EmptyState";
 import Spinner from "@/components/common/Spinner";
 import Pagination from "@/components/common/Pagination";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-
-const LIMIT = 10;
+import { PAGE_LIMIT } from "@/lib/constants";
 
 export default function ProductsPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -16,14 +15,14 @@ export default function ProductsPage() {
     const search = searchParams.get("search") ?? "";
     const page = Number(searchParams.get("page") ?? "1");
 
-    const skip = (page - 1) * LIMIT;
+    const skip = (page - 1) * PAGE_LIMIT;
 
     const { data, isLoading, isError, error, refetch } = useQuery({
         queryKey: ["products", page, category, search],
         queryFn: () => {
-            if (search) return searchProducts(search, LIMIT, skip);
-            if (category) return getProductsByCategory(category, LIMIT, skip);
-            return getProducts(LIMIT, skip);
+            if (search) return searchProducts(search, PAGE_LIMIT, skip);
+            if (category) return getProductsByCategory(category, PAGE_LIMIT, skip);
+            return getProducts(PAGE_LIMIT, skip);
         },
     });
 
@@ -57,7 +56,7 @@ export default function ProductsPage() {
 
     const products = data?.products ?? [];
     const total = data?.total ?? 0;
-    const totalPages = Math.ceil(total / LIMIT);
+    const totalPages = Math.ceil(total / PAGE_LIMIT);
 
     return (
         <div className="page-wrapper">
