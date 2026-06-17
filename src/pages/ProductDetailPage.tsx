@@ -3,11 +3,16 @@ import { useParams, Link } from "react-router-dom";
 import { useProduct } from "@/queries/useProduct";
 import Spinner from "@/components/common/Spinner";
 import ErrorState from "@/components/common/ErrorState";
+import StarRating from "@/components/common/StarRating";
+import CustomerReviews from "@/components/product/CustomerReviews";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function ProductDetailPage() {
     const { id } = useParams<{ id: string }>();
     const { data: product, isLoading, isError, error, refetch } = useProduct(Number(id));
     const [activeImage, setActiveImage] = useState(0);
+
+    useDocumentTitle(product?.title ?? (isLoading ? "Loading…" : "Product"));
 
     if (isLoading) {
         return (
@@ -232,64 +237,8 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* ── Reviews ── */}
-                {product.reviews && product.reviews.length > 0 && (
-                    <section style={{ marginTop: "4rem" }}>
-                        <div style={{ borderTop: "1px solid var(--border)", paddingTop: "2.5rem" }}>
-                            <h2 style={{
-                                fontFamily: "'Playfair Display', serif",
-                                fontSize: "1.25rem",
-                                fontWeight: 700,
-                                color: "var(--text)",
-                                letterSpacing: "-0.01em",
-                                marginBottom: "1.75rem",
-                            }}>
-                                Customer reviews
-                            </h2>
-
-                            <div className="reviews-grid">
-                                {product.reviews.map((review, i) => (
-                                    <div key={i} style={{
-                                        padding: "1.25rem",
-                                        backgroundColor: "var(--bg-card)",
-                                        borderRadius: "4px",
-                                        borderLeft: "2px solid var(--border)",
-                                    }}>
-                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.625rem" }}>
-                                            <StarRating rating={review.rating} small />
-                                            <time style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.6875rem", color: "var(--stone-400)" }}>
-                                                {new Date(review.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                                            </time>
-                                        </div>
-                                        <p style={{ fontSize: "0.9375rem", color: "var(--text)", lineHeight: 1.6, marginBottom: "0.75rem" }}>
-                                            "{review.comment}"
-                                        </p>
-                                        <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--stone-600)" }}>
-                                            {review.reviewerName}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-                )}
+                {product.reviews && <CustomerReviews reviews={product.reviews} />}
             </div>
-        </div>
-    );
-}
-
-function StarRating({ rating, small }: { rating: number; small?: boolean }) {
-    const size = small ? 12 : 14;
-    return (
-        <div style={{ display: "flex", gap: "2px" }}>
-            {[1, 2, 3, 4, 5].map((star) => {
-                const filled = rating >= star;
-                const half = !filled && rating >= star - 0.5;
-                return (
-                    <svg key={star} width={size} height={size} viewBox="0 0 24 24" fill={filled || half ? "var(--amber)" : "none"} stroke="var(--amber)" strokeWidth={1.5}>
-                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-                    </svg>
-                );
-            })}
         </div>
     );
 }

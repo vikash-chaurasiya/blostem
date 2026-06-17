@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getCategories, getCategoryThumbnail } from "@/api/product.api";
 import Spinner from "@/components/common/Spinner";
 import ErrorState from "@/components/common/ErrorState";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 function CategoryCard({ slug, name }: { slug: string; name: string }) {
     const { data: thumbnail, isLoading } = useQuery({
@@ -87,6 +88,8 @@ function CategoryCard({ slug, name }: { slug: string; name: string }) {
 }
 
 export default function CategoriesPage() {
+    useDocumentTitle("Categories");
+
     const { data: categories, isLoading, isError, error, refetch } = useQuery({
         queryKey: ["categories-meta"],
         queryFn: getCategories,
