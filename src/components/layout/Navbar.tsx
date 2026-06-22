@@ -26,10 +26,11 @@ export default function Navbar() {
     useEffect(() => {
         if (debouncedSearch.trim()) {
             navigate(`/?search=${encodeURIComponent(debouncedSearch.trim())}`);
-        } else if (location.pathname === "/" && new URLSearchParams(location.search).has("search")) {
+        } else if (window.location.pathname === "/" && new URLSearchParams(window.location.search).has("search")) {
             navigate("/");
         }
-    }, [debouncedSearch, navigate, location.pathname, location.search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedSearch, navigate]);
 
     const handleLogout = () => {
         logout();
